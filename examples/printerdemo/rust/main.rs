@@ -1,19 +1,26 @@
 // Copyright © SixtyFPS GmbH <info@sixtyfps.io>
 // SPDX-License-Identifier: (GPL-3.0-only OR LicenseRef-SixtyFPS-commercial)
 
+#![no_std]
+#![cfg_attr(feature = "mcu-pico-st7789", no_main)]
+
+extern crate alloc;
+
+use alloc::vec::Vec;
+
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+use alloc::rc::Rc;
 use sixtyfps::Model;
-use std::rc::Rc;
 
 sixtyfps::include_modules!();
 
 /// Returns the current time formated as a string
 fn current_time() -> sixtyfps::SharedString {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "chrono")]
     return chrono::Local::now().format("%H:%M:%S %d/%m/%Y").to_string().into();
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(not(feature = "chrono"))]
     return "".into();
 }
 
@@ -36,13 +43,34 @@ impl PrinterQueueData {
     }
 }
 
+#[cfg(not(feature = "mcu-pico-st7789"))]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen(start))]
 pub fn main() {
+    #[cfg(feature = "sixtyfps-rendering-backend-mcu")]
+    {
+        #[cfg(feature = "mcu-simulator")]
+        sixtyfps_rendering_backend_mcu::init_simulator();
+        #[cfg(not(feature = "mcu-simulator"))]
+        sixtyfps_rendering_backend_mcu::init_with_mock_display();
+    }
+
     // This provides better error messages in debug mode.
     // It's disabled in release mode so it doesn't bloat up the file size.
     #[cfg(all(debug_assertions, target_arch = "wasm32"))]
     console_error_panic_hook::set_once();
 
+    printerdemo_main();
+}
+
+#[cfg(feature = "mcu-pico-st7789")]
+#[sixtyfps_rendering_backend_mcu::entry]
+fn main() -> ! {
+    sixtyfps_rendering_backend_mcu::init_board();
+    printerdemo_main();
+    loop {}
+}
+
+fn printerdemo_main() {
     let main_window = MainWindow::new();
     main_window.set_ink_levels(sixtyfps::VecModel::from_slice(&[
         InkLevel { color: sixtyfps::Color::from_rgb_u8(0, 255, 255), level: 0.40 },
@@ -63,7 +91,7 @@ pub fn main() {
 
     main_window.on_quit(move || {
         #[cfg(not(target_arch = "wasm32"))]
-        std::process::exit(0);
+        sixtyfps::quit_event_loop();
     });
 
     let printer_queue_copy = printer_queue.clone();
@@ -79,7 +107,7 @@ pub fn main() {
     let printer_queue_weak = Rc::downgrade(&printer_queue);
     printer_queue.print_progress_timer.start(
         sixtyfps::TimerMode::Repeated,
-        std::time::Duration::from_secs(1),
+        core::time::Duration::from_secs(1),
         move || {
             if let Some(printer_queue) = printer_queue_weak.upgrade() {
                 if printer_queue.data.row_count() > 0 {
