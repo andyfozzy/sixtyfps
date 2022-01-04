@@ -312,6 +312,7 @@ lazy_static! {
         ("LICENSE\\..*", LicenseLocation::NoLicense),
         ("LICENSE-DejaVu", LicenseLocation::NoLicense),
         (".+\\.txt$", LicenseLocation::NoLicense),
+        ("memory.x$", LicenseLocation::NoLicense), // third-party file
     ]
     .iter()
     .map(|(re, ty)| (regex::Regex::new(re).unwrap(), *ty))

@@ -15,6 +15,10 @@ homepage = "https://sixtyfps.io"
 [lib]
 path = "lib.rs"
 
+[features]
+
+mcu-pico-st7789 = []
+
 [dependencies]
 sixtyfps-compilerlib = { version = "=0.1.6", path = "../../../sixtyfps_compiler", features = ["rust", "display-diagnostics"] }
 thiserror = "1"
