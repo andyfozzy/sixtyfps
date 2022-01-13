@@ -140,6 +140,13 @@ impl PlatformWindow for SimulatorWindow {
         // Nothing to do until we start caching stuff that needs freeing
     }
 
+    fn set_rendering_notifier(
+        &self,
+        _callback: Box<dyn FnMut(sixtyfps_corelib::window::RenderingState)>,
+    ) {
+        unimplemented!()
+    }
+
     fn show_popup(
         &self,
         _popup: &sixtyfps_corelib::component::ComponentRc,
