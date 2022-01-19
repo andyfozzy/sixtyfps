@@ -40,6 +40,9 @@ mod renderer;
 pub trait Devices {
     fn screen_size(&self) -> IntSize;
     fn fill_region(&mut self, region: IntRect, pixels: &[Rgb888]);
+    fn read_touch_event(&mut self) -> Option<sixtyfps_corelib::input::MouseEvent> {
+        None
+    }
     fn debug(&mut self, _: &str);
 }
 
@@ -68,12 +71,10 @@ where
     fn debug(&mut self, text: &str) {
         use embedded_graphics::{
             mono_font::{ascii::FONT_6X10, MonoTextStyle},
-            text::{Alignment, Text},
+            text::Text,
         };
         let style = MonoTextStyle::new(&FONT_6X10, Rgb888::RED.into());
-        Text::with_alignment(text, Point::new(20, 30), style, Alignment::Center)
-            .draw(self)
-            .unwrap();
+        Text::new(text, Point::new(20, 30), style).draw(self).unwrap();
     }
 }
 
@@ -247,6 +248,18 @@ mod the_backend {
                         // TODO: sleep();
                     }
                 }
+                DEVICES.with(|devices| {
+                    let e = devices.borrow_mut().as_mut().unwrap().read_touch_event();
+                    devices.borrow_mut().as_mut().unwrap().debug(&alloc::format!("EVENT: {:?}", e));
+                    if let Some(event) = e {
+                        if let Some(window) = WINDOWS.with(|x| x.borrow().clone()) {
+                            window.self_weak.upgrade().unwrap().process_mouse_input(event);
+                        }
+                    }
+                });
+                if let Some(window) = WINDOWS.with(|x| x.borrow().clone()) {
+                    self.draw(window)
+                }
             }
         }
 
@@ -314,7 +327,7 @@ pub fn init_simulator() {
     });
 }
 
-pub fn init_with_display<Display: Devices + 'static>(mut display: Display) {
+pub fn init_with_display<Display: Devices + 'static>(display: Display) {
     DEVICES.with(|d| *d.borrow_mut() = Some(Box::new(display)));
     sixtyfps_corelib::backend::instance_or_init(|| {
         alloc::boxed::Box::new(the_backend::MCUBackend::default())
