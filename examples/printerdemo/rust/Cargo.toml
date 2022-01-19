@@ -17,7 +17,7 @@ name = "printerdemo"
 [features]
 
 mcu-simulator = ["sixtyfps-rendering-backend-mcu/simulator"]
-mcu-pico-st7789 = ["sixtyfps-rendering-backend-mcu/pico-st7789", "sixtyfps-rendering-backend-mcu/snapshot_renderer", "sixtyfps-build/mcu-pico-st7789"]
+mcu-pico-st7789 = ["sixtyfps-rendering-backend-mcu/pico-st7789", "sixtyfps-build/mcu-pico-st7789"]
 
 [dependencies]
 sixtyfps = { path = "../../../api/sixtyfps-rs", default-features = false }

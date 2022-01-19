@@ -68,7 +68,7 @@ MainWindow := Window {
                     y: active-page == 0 ? 0 : active-page < 0 ? - height - 1px : parent.height + 1px;
                     animate y { duration: 125ms; easing: ease; }
                 }
-                SettingsPage {
+                /*SettingsPage {
                     y: active-page == 1 ? 0 : active-page < 1 ? - height - 1px : parent.height + 1px;
                     animate y { duration: 125ms; easing: ease; }
                 }
@@ -77,7 +77,7 @@ MainWindow := Window {
                     animate y { duration: 125ms; easing: ease; }
                     ink-levels <=> root.ink-levels;
                     page-visible: active-page == 2;
-                }
+                }*/
             }
         }
     }

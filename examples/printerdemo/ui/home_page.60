@@ -85,7 +85,7 @@ export HomePage := Page {
         back => { current-subpage = 0 }
     }
     */
-    ScanPage {
+   /* ScanPage {
         x: current-subpage == 2 ? 0 : parent.width + parent.x + 2px;
         animate x { duration: 125ms; easing: ease; }
         back => { current-subpage = 0 }
@@ -99,5 +99,5 @@ export HomePage := Page {
         x: current-subpage == 4 ? 0 : parent.width + parent.x + 2px;
         animate x { duration: 125ms; easing: ease; }
         back => { current-subpage = 0 }
-    }
+    }*/
 }
